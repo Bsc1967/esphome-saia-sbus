@@ -27,7 +27,7 @@ external_components:
       url: https://github.com/Bsc1967/esphome-saia-sbus
       ref: main
     components: [saia_sbus]
-    refresh: 1d
+    refresh: 0s
 
 uart:
   id: meter_uart
@@ -52,3 +52,9 @@ sensor:
       name: Spanning
     current:
       name: Stroom
+    partial_energy:
+      name: Energie deelteller
+    reactive_power:
+      name: Reactief vermogen
+    power_factor:
+      name: Cos phi

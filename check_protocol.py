@@ -10,7 +10,7 @@ vectors = [
 for payload, expected in vectors:
     actual = binascii.crc_hqx(bytes.fromhex(payload), 0)
     assert actual == expected, (payload, actual, expected)
-request = bytes.fromhex("b5000106060014")
+request = bytes.fromhex("b5000106080014")
 request += binascii.crc_hqx(request, 0).to_bytes(2, "big")
 print("Four independent RACOM CRC vectors passed.")
 print("Project request before escaping:", request.hex(" "))

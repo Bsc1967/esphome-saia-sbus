@@ -14,6 +14,9 @@ class SaiaSBus : public PollingComponent, public uart::UARTDevice {
   void set_power(sensor::Sensor *value) { power_ = value; }
   void set_voltage(sensor::Sensor *value) { voltage_ = value; }
   void set_current(sensor::Sensor *value) { current_ = value; }
+  void set_partial_energy(sensor::Sensor *value) { partial_energy_ = value; }
+  void set_reactive_power(sensor::Sensor *value) { reactive_power_ = value; }
+  void set_power_factor(sensor::Sensor *value) { power_factor_ = value; }
   void setup() override;
   void update() override;
   void loop() override;
@@ -22,6 +25,7 @@ class SaiaSBus : public PollingComponent, public uart::UARTDevice {
   void finish_();
   GPIOPin *direction_;
   sensor::Sensor *energy_, *power_, *voltage_, *current_;
+  sensor::Sensor *partial_energy_{nullptr}, *reactive_power_{nullptr}, *power_factor_{nullptr};
   uint8_t address_{1};
   bool pending_{false}, escaped_{false};
   uint32_t boot_{0}, sent_{0}, last_rx_{0};

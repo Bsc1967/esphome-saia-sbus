@@ -15,6 +15,9 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Required("power"): sensor.sensor_schema(unit_of_measurement="W", accuracy_decimals=0, device_class="power", state_class="measurement"),
     cv.Required("voltage"): sensor.sensor_schema(unit_of_measurement="V", accuracy_decimals=0, device_class="voltage", state_class="measurement"),
     cv.Required("current"): sensor.sensor_schema(unit_of_measurement="A", accuracy_decimals=1, device_class="current", state_class="measurement"),
+    cv.Optional("partial_energy"): sensor.sensor_schema(unit_of_measurement="kWh", accuracy_decimals=2, device_class="energy", state_class="total_increasing"),
+    cv.Optional("reactive_power"): sensor.sensor_schema(unit_of_measurement="var", accuracy_decimals=0, device_class="reactive_power", state_class="measurement"),
+    cv.Optional("power_factor"): sensor.sensor_schema(accuracy_decimals=2, state_class="measurement", icon="mdi:angle-acute"),
 }).extend(cv.polling_component_schema("5s")).extend(uart.UART_DEVICE_SCHEMA)
 
 async def to_code(config):
@@ -25,3 +28,6 @@ async def to_code(config):
     cg.add(var.set_address(config["address"]))
     for key in ("energy", "power", "voltage", "current"):
         cg.add(getattr(var, "set_" + key)(await sensor.new_sensor(config[key])))
+    for key in ("partial_energy", "reactive_power", "power_factor"):
+        if key in config:
+            cg.add(getattr(var, "set_" + key)(await sensor.new_sensor(config[key])))

@@ -23,7 +23,7 @@ void SaiaSBus::update() {
   if (pending_ || millis() - boot_ < 30000) return;
   uint8_t discard;
   while (available()) read_byte(&discard);
-  std::vector<uint8_t> packet{0xB5, 0x00, address_, 0x06, 0x06, 0x00, 0x14};
+  std::vector<uint8_t> packet{0xB5, 0x00, address_, 0x06, 0x08, 0x00, 0x14};
   const uint16_t checksum = crc(packet, packet.size());
   packet.push_back(checksum >> 8);
   packet.push_back(checksum & 0xFF);
@@ -57,7 +57,7 @@ void SaiaSBus::finish_() {
     ESP_LOGW(TAG, "Unexpected ACK/NAK");
     return;
   }
-  if (rx_[1] != 1 || length != 32) return;
+  if (rx_[1] != 1 || length != 40) return;
   auto value = [this](size_t index) -> uint32_t {
     size_t offset = 2 + 4 * index;
     return (uint32_t(rx_[offset]) << 24) | (uint32_t(rx_[offset + 1]) << 16) |
@@ -67,6 +67,9 @@ void SaiaSBus::finish_() {
   voltage_->publish_state(value(4));
   current_->publish_state(value(5) * 0.1f);
   power_->publish_state(value(6) * 10.0f);
+  if (partial_energy_ != nullptr) partial_energy_->publish_state(value(1) * 0.01f);
+  if (reactive_power_ != nullptr) reactive_power_->publish_state(value(7) * 10.0f);
+  if (power_factor_ != nullptr) power_factor_->publish_state(value(8) * 0.01f);
   pending_ = false;
   status_clear_warning();
 }
@@ -95,6 +98,8 @@ void SaiaSBus::loop() {
     status_set_warning();
     ESP_LOGW(TAG, "No valid S-Bus reply (address %u)", address_);
     for (auto *sensor : {energy_, power_, voltage_, current_}) sensor->publish_state(NAN);
+    for (auto *sensor : {partial_energy_, reactive_power_, power_factor_})
+      if (sensor != nullptr) sensor->publish_state(NAN);
   }
 }
 }}
